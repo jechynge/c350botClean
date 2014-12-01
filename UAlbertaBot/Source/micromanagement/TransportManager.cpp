@@ -18,7 +18,7 @@ void TransportManager::executeMicro(const UnitVector & targets)
 	BOOST_FOREACH(BWAPI::Unit * unit, BWAPI::Broodwar->self()->getUnits())
 	{
 		//conditions for grabbing possible cargo
-		if (unit->getType() == BWAPI::UnitTypes::Protoss_Reaver && unit->isCompleted() && unit->exists() && !unit->isLoaded())
+		if (unit->getType() == BWAPI::UnitTypes::Protoss_Reaver && !unit->isLoaded())
 		{
 			waitingReavers.push_back(unit);
 		}
@@ -30,7 +30,10 @@ void TransportManager::executeMicro(const UnitVector & targets)
 		// If the shuttle is low on health and carrying a payload, jettison any cargo.
 		if ((transportUnit->getHitPoints() + transportUnit->getShields()) < MIN_SAFE_HEALTH)
 		{
-			transportUnit->unloadAll(false);
+			BOOST_FOREACH(BWAPI::Unit* reaver, transportUnit->getLoadedUnits())
+			{
+				transportUnit->unload(reaver);
+			}
 
 			// Attempt to GTFO to let shields recharge
 			smartMove(transportUnit, BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation()));
@@ -39,31 +42,46 @@ void TransportManager::executeMicro(const UnitVector & targets)
 			continue;
 		}
 
-		// if have reavers, or not building anymore reavers
-		if (transportUnit->getLoadedUnits().size() == 2)
+		// if we're in position
+		if (transportUnit->getDistance(order.position) < order.radius)
 		{
-			if (order.type == order.HarassWorkers)
+			// and we're carrying any reavers
+			if (transportUnit->getLoadedUnits().size() > 0)
 			{
-				// if we're not within range of our designated target
-				if (transportUnit->getDistance(order.position) > order.radius)
+				// drop reavers so they can attack
+				transportUnit->stop(false);
+
+				// unloadAll doesn't work properly, so drop everything explicitly
+				BOOST_FOREACH(BWAPI::Unit* reaver, transportUnit->getLoadedUnits())
 				{
-					smartMove(transportUnit, order.position);
-				}
-				else
-				{
-					// drop reavers so they can attack
-					transportUnit->unloadAll(true);
+					transportUnit->unload(reaver);
 				}
 			}
+			else
+			{
+				BWAPI::Unit * closestReaver = closestCarryUnit(transportUnit, waitingReavers);
+
+				transportUnit->stop();
+
+				transportUnit->load(closestReaver, true);
+			}
 		}
-		// if there are reavers waiting to be loaded, pick them up
-		else if (waitingReavers.size() > 0)
+		else
 		{
-			BWAPI::Unit * closestReaver = closestCarryUnit(transportUnit, waitingReavers);
+			// if we're not in position and we've got a full house, move to target
+			if (transportUnit->getLoadedUnits().size() == 2)
+			{
+				smartMove(transportUnit, order.position);
+			}
+			// if there are reavers waiting to be loaded, pick them up
+			else if (waitingReavers.size() > 0)
+			{
+				BWAPI::Unit * closestReaver = closestCarryUnit(transportUnit, waitingReavers);
 
-			transportUnit->stop();
+				transportUnit->stop();
 
-			transportUnit->load(closestReaver, true);
+				transportUnit->load(closestReaver, true);
+			}
 		}
 	}
 }

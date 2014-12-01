@@ -77,7 +77,7 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 		if (shuttle->getDistance(orderTarget) < orderRadius)
 		{
 			orderTarget = getDropSite(shuttle);
-			orderRadius = 50;
+			orderRadius = 30;
 		}
 
 		squadData.addSquad(Squad(dropUnits, SquadOrder(SquadOrder::HarassWorkers, orderTarget, orderRadius, "Harass Workers!")));
@@ -404,21 +404,21 @@ BWAPI::Position CombatCommander::getDropSite(BWAPI::Unit * transportUnit)
 		// calculate x component
 		if (closestMinerals->getPosition().x() - enemyBase->getPosition().x() < 0)
 		{
-			xpos = closestMinerals->getPosition().x() - 120;
+			xpos = closestMinerals->getPosition().x() - 75;
 		}
 		else
 		{
-			xpos = closestMinerals->getPosition().x() + 120;
+			xpos = closestMinerals->getPosition().x() + 75;
 		}
 
 		// calculate y component
 		if (closestMinerals->getPosition().y() - enemyBase->getPosition().y() < 0)
 		{
-			ypos = closestMinerals->getPosition().y() - 120;
+			ypos = closestMinerals->getPosition().y() - 75;
 		}
 		else
 		{
-			ypos = closestMinerals->getPosition().y() + 120;
+			ypos = closestMinerals->getPosition().y() + 75;
 		}
 	}
 
