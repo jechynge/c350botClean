@@ -602,6 +602,10 @@ const MetaPairVector StrategyManager::getProtossZealotRushBuildOrderGoal() const
 		}
 	}
 
+	if (numReavers == 2) {
+		goal.push_back(MetaPair(BWAPI::UpgradeTypes::Gravitic_Drive, 1));
+	}
+
 	if (numNexusAll >= 2 || BWAPI::Broodwar->getFrameCount() > 9000)
 	{
 		gatewayWanted = 6;
