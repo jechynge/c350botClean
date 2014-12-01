@@ -47,7 +47,6 @@ void TransportManager::executeMicro(const UnitVector & targets)
 				// if we're not within range of our designated target
 				if (transportUnit->getDistance(order.position) > order.radius)
 				{
-					BWAPI::Broodwar->printf("Have 2 reavers, moving to target at [%d,%d]", order.position.x(), order.position.y());
 					smartMove(transportUnit, order.position);
 				}
 				else
@@ -86,4 +85,57 @@ BWAPI::Unit * TransportManager::closestCarryUnit(BWAPI::Unit * transportUnit, Un
 	}
 
 	return closestGround;
+}
+
+BWAPI::Position TransportManager::getDropSite(BWAPI::Unit * transportUnit)
+{
+	BWAPI::Unit * closestMinerals = NULL;
+	double closestDist = 100000;
+	BWTA::BaseLocation* enemyBase = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy());
+	std::set<BWAPI::Unit*> minerals = enemyBase->getMinerals();
+
+	BOOST_FOREACH(BWAPI::Unit * mineral, minerals)
+	{
+		if (!mineral->getPosition().isValid())
+		{
+			continue;
+		}
+
+		double dist = mineral->getDistance(transportUnit);
+
+		if (!closestMinerals || (dist < closestDist))
+		{
+			closestMinerals = mineral;
+			closestDist = dist;
+		}
+	}
+
+	int xpos = -1, ypos = -1;
+
+	if (closestMinerals)
+	{
+		int dx = closestMinerals->getPosition().x() - transportUnit->getPosition().x();
+
+		if (dx < 0)
+		{
+			xpos = closestMinerals->getPosition().x() - 30;
+		}
+		else
+		{
+			xpos = closestMinerals->getPosition().x() + 30;
+		}
+
+		int dy = closestMinerals->getPosition().y() - transportUnit->getPosition().y();
+
+		if (dx < 0)
+		{
+			ypos = closestMinerals->getPosition().y() - 30;
+		}
+		else
+		{
+			ypos = closestMinerals->getPosition().y() + 30;
+		}
+	}
+
+	return BWAPI::Position(xpos, ypos);
 }

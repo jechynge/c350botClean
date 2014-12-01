@@ -41,6 +41,8 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 
 	UnitVector dropUnits;
 
+	BWAPI::Unit * shuttle = NULL;
+
 	// remove the reavers and shuttles from the set so they don't get double-assigned.
 	// They're special snowflakes with a specific purpose
 	BOOST_FOREACH(BWAPI::Unit* unit, unitsToAssign)
@@ -58,18 +60,27 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 		if (unit->getType() == BWAPI::UnitTypes::Protoss_Shuttle)
 		{
 			dropUnits.push_back(unit);
+			shuttle = unit;
 		}
 	}
 
-	if (!dropUnits.empty())
+	if (!dropUnits.empty() && shuttle)
 	{
+		BWAPI::Position orderTarget = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy())->getPosition();
+		int orderRadius = 400;
+
 		BOOST_FOREACH(BWAPI::Unit * unit, dropUnits)
 		{
 			unitsToAssign.erase(unit);
 		}
 
-		//return;
-		squadData.addSquad(Squad(dropUnits, SquadOrder(SquadOrder::HarassWorkers, BWAPI::Position(InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy())->getPosition()), 300, "Harass Workers!")));
+		if (shuttle->getDistance(orderTarget) < orderRadius)
+		{
+			orderTarget = getDropSite(shuttle);
+			orderRadius = 50;
+		}
+
+		squadData.addSquad(Squad(dropUnits, SquadOrder(SquadOrder::HarassWorkers, orderTarget, orderRadius, "Harass Workers!")));
 	}
 }
 
@@ -361,4 +372,55 @@ BWAPI::Position CombatCommander::getDefendLocation()
 void CombatCommander::drawSquadInformation(int x, int y)
 {
 	squadData.drawSquadInformation(x, y);
+}
+
+BWAPI::Position CombatCommander::getDropSite(BWAPI::Unit * transportUnit)
+{
+	BWAPI::Unit * closestMinerals = NULL;
+	double closestDist = 100000;
+	BWTA::BaseLocation* enemyBase = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy());
+	std::set<BWAPI::Unit*> minerals = enemyBase->getMinerals();
+
+	BOOST_FOREACH(BWAPI::Unit * mineral, minerals)
+	{
+		if (!mineral->getPosition().isValid())
+		{
+			continue;
+		}
+
+		double dist = mineral->getDistance(enemyBase->getPosition());
+
+		if (!closestMinerals || (dist < closestDist))
+		{
+			closestMinerals = mineral;
+			closestDist = dist;
+		}
+	}
+
+	int xpos = -1, ypos = -1;
+
+	if (closestMinerals)
+	{
+		// calculate x component
+		if (closestMinerals->getPosition().x() - enemyBase->getPosition().x() < 0)
+		{
+			xpos = closestMinerals->getPosition().x() - 120;
+		}
+		else
+		{
+			xpos = closestMinerals->getPosition().x() + 120;
+		}
+
+		// calculate y component
+		if (closestMinerals->getPosition().y() - enemyBase->getPosition().y() < 0)
+		{
+			ypos = closestMinerals->getPosition().y() - 120;
+		}
+		else
+		{
+			ypos = closestMinerals->getPosition().y() + 120;
+		}
+	}
+
+	return BWAPI::Position(xpos, ypos);
 }

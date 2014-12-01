@@ -38,6 +38,7 @@ class CombatCommander
 	BWAPI::Unit *		findClosestDefender(std::set<BWAPI::Unit *> & enemyUnitsInRegion, const std::set<BWAPI::Unit *> & units);
 	BWTA::Region *		getClosestEnemyRegion();
 	BWAPI::Position		getDefendLocation();
+	BWAPI::Position		getDropSite(BWAPI::Unit * transportUnit);
 
 public:
 
