@@ -116,7 +116,7 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 		}
 
 		// If there aren't enough workers left, let everyone join the fun.
-		if (enemyWorkers.size() < 10)
+		if (enemyWorkers.size() < 5)
 		{
 			enemyWorkers.insert(enemyWorkers.end(), enemyUnits.begin(), enemyUnits.end());
 		}

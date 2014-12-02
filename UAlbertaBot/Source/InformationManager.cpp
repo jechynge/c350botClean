@@ -447,6 +447,11 @@ bool InformationManager::enemyHasDetector()
 	return enemyUnitData.hasDetectorUnits();
 }
 
+bool InformationManager::enemyFlyerThreat()
+{
+	return enemyUnitData.hasFlyingUnits();
+}
+
 bool InformationManager::tileContainsUnit(BWAPI::TilePosition tile)
 {
 	return map.canBuildHere(tile);

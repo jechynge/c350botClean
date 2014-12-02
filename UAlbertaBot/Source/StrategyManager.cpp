@@ -570,7 +570,7 @@ const MetaPairVector StrategyManager::getProtossZealotRushBuildOrderGoal() const
 	int dragoonsWanted = numDragoons;
 	int gatewayWanted = 3;
 	int probesWanted = numProbes + 4;
-	int reaversWanted = 2 - numReavers;
+	int reaversWanted = 1 - numReavers;
 	int shuttlesWanted = 1 - numShuttles;
 
 	//If we build a robotics facility for observers, don't need to build another one for reavers
@@ -592,8 +592,22 @@ const MetaPairVector StrategyManager::getProtossZealotRushBuildOrderGoal() const
 		}
 	}
 
+	//If the enemy has air units, want extra dragoons and no more zealots
+	//Because air units will usually be made en masse and not just as a component of a varied army (Because these are bots we're playing against)
+	//Worst case scenario dragoons are still good and can attack ground and do bolster our end game force
+	//if (InformationManager::Instance().enemyFlyerThreat())
+	//{
+	//	zealotsWanted = 0;
+	//	dragoonsWanted += 6;
+	//	reaversWanted = 1; //Just the reaver for drops, no reaver component to army if they have no ground forces
+	//}
+
 	if (reaversWanted > 0 || shuttlesWanted > 0)
 	{
+		if (numCyber == 0)
+		{
+			goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Cybernetics_Core, 1));
+		}
 		if (numRoboticsFacility == 0 && !pushedRoboticsFacility){
 			goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Robotics_Facility, 1));
 		}
@@ -602,15 +616,15 @@ const MetaPairVector StrategyManager::getProtossZealotRushBuildOrderGoal() const
 		}
 	}
 
-	if (numReavers == 2) {
+	/*if (numReavers == 2) {
 		goal.push_back(MetaPair(BWAPI::UpgradeTypes::Gravitic_Drive, 1));
-	}
+	}*/
 
 	if (numNexusAll >= 2 || BWAPI::Broodwar->getFrameCount() > 9000)
 	{
 		gatewayWanted = 6;
 		goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Assimilator, 1));
-		goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Cybernetics_Core, 1));
+		//goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Cybernetics_Core, 1));
 	}
 
 	if (numCyber > 0)
@@ -619,19 +633,19 @@ const MetaPairVector StrategyManager::getProtossZealotRushBuildOrderGoal() const
 		goal.push_back(MetaPair(BWAPI::UpgradeTypes::Singularity_Charge, 1));
 	}
 
-	if (numZealots + numDragoons > 12)
+	/*if (numZealots + numDragoons > 12)
 	{
 		if (numForges == 0)
 		{
 			goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Forge, 1));
 		}
-	}
+	}*/
 
 	//if (numForges == 1) goal.push_back(MetaPair(BWAPI::UpgradeTypes::Protoss_Ground_Weapons, 1));
 
-	if ((numForges > 0) && ((numCannon*numNexusAll) <= 3)) {
+	/*if ((numForges > 0) && ((numCannon*numNexusAll) <= 3)) {
 		goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Photon_Cannon, 1));
-	}
+	}*/
 
 	if (numNexusCompleted >= 3)
 	{

@@ -15,6 +15,7 @@ struct UnitInfo
 	BWAPI::Position		lastPosition;
 	BWAPI::UnitType		type;
     bool                completed;
+	std::string			specialTask;
 
 	bool canCloak() const
 	{
@@ -106,6 +107,7 @@ public:
 	void	getFlyingUnits(std::set<UnitInfo> & v)				const;
 	bool	hasCloakedUnits()									const;
 	bool	hasDetectorUnits()									const;
+	bool	hasFlyingUnits()									const;
 
 	int		getGasLost()										const	{ return gasLost; }
 	int		getMineralsLost()									const	{ return mineralsLost; }

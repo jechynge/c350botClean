@@ -41,7 +41,7 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 
 	UnitVector dropUnits;
 
-	BWAPI::Unit * shuttle = NULL;
+	BWAPI::Unit * shuttle = NULL, * roboticsBay = NULL;
 
 	// remove the reavers and shuttles from the set so they don't get double-assigned.
 	// They're special snowflakes with a specific purpose
@@ -62,25 +62,64 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 			dropUnits.push_back(unit);
 			shuttle = unit;
 		}
+
+		if (unit->getType() == BWAPI::UnitTypes::Protoss_Robotics_Facility)
+		{
+			roboticsBay = unit;
+		}
 	}
 
-	if (!dropUnits.empty() && shuttle)
+	BOOST_FOREACH(BWAPI::Unit * unit, dropUnits)
 	{
-		BWAPI::Position orderTarget = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy())->getPosition();
-		int orderRadius = 400;
+		unitsToAssign.erase(unit);
+	}
 
+	BWAPI::Position enemyBaseLocation = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy())->getPosition();
+	BWAPI::Position ourBaseLocation = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->self())->getPosition();
+
+	// if we have a shuttle...
+	if (shuttle)
+	{
+		if (dropUnits.size() == 1)
+		{
+			BWAPI::Position orderTarget = ourBaseLocation;
+			int orderRadius = 100;
+
+			if (roboticsBay)
+			{
+				orderTarget = roboticsBay->getPosition();
+			}
+
+			squadData.addSquad(Squad(dropUnits, SquadOrder(SquadOrder::HarassWorkers, orderTarget, orderRadius, "More Reavers!")));
+		}
+		// ...and we have a reaver, then set our target to the enemy base
+		else if (dropUnits.size() > 1)
+		{
+			BWAPI::Position orderTarget = enemyBaseLocation;
+			int orderRadius = 100;
+
+			if (shuttle->getDistance(orderTarget) < orderRadius)
+			{
+				orderTarget = getDropSite(shuttle);
+				orderRadius = 30;
+			}
+
+			squadData.addSquad(Squad(dropUnits, SquadOrder(SquadOrder::HarassWorkers, orderTarget, orderRadius, "Harass Workers!")));
+		}
+	}
+	else if (!dropUnits.empty())
+	{
 		BOOST_FOREACH(BWAPI::Unit * unit, dropUnits)
 		{
-			unitsToAssign.erase(unit);
+			//InformationManager::Instance().getUnitInfo(BWAPI::Broodwar->self()).find(unit);
+			// if we have a reaver behind enemy lines with no shuttle, just cause havoc as long as we can
+			if (unit->getDistance(enemyBaseLocation) < 300)
+			{
+				UnitVector s;
+				s.push_back(unit);
+				squadData.addSquad(Squad(s, SquadOrder(SquadOrder::HarassWorkers, enemyBaseLocation, 300, "Harass Workers!")));
+			}
 		}
-
-		if (shuttle->getDistance(orderTarget) < orderRadius)
-		{
-			orderTarget = getDropSite(shuttle);
-			orderRadius = 30;
-		}
-
-		squadData.addSquad(Squad(dropUnits, SquadOrder(SquadOrder::HarassWorkers, orderTarget, orderRadius, "Harass Workers!")));
 	}
 }
 
@@ -397,30 +436,44 @@ BWAPI::Position CombatCommander::getDropSite(BWAPI::Unit * transportUnit)
 		}
 	}
 
-	int xpos = -1, ypos = -1;
+	int xpos = enemyBase->getPosition().x(), ypos = enemyBase->getPosition().y(), diff = 120;
 
+	//Attempt to drop behind mineral lines - somewhat buggy
 	if (closestMinerals)
 	{
-		// calculate x component
-		if (closestMinerals->getPosition().x() - enemyBase->getPosition().x() < 0)
-		{
-			xpos = closestMinerals->getPosition().x() - 75;
-		}
-		else
-		{
-			xpos = closestMinerals->getPosition().x() + 75;
-		}
+		int dx = closestMinerals->getPosition().x() - enemyBase->getPosition().x();
+		int dy = closestMinerals->getPosition().y() - enemyBase->getPosition().y();
 
-		// calculate y component
-		if (closestMinerals->getPosition().y() - enemyBase->getPosition().y() < 0)
+		if (abs(dx) > abs(dy))
 		{
-			ypos = closestMinerals->getPosition().y() - 75;
+			if (dx < 0)
+			{
+				xpos = enemyBase->getPosition().x() - diff;
+			}
+			else
+			{
+				xpos = enemyBase->getPosition().x() + diff;
+			}
 		}
 		else
 		{
-			ypos = closestMinerals->getPosition().y() + 75;
+			if (dy < 0)
+			{
+				ypos = enemyBase->getPosition().y() - diff;
+			}
+			else
+			{
+				ypos = enemyBase->getPosition().y() + diff;
+			}
 		}
 	}
+
+	//drop right in mineral line
+	/*if (closestMinerals)
+	{
+		xpos = (closestMinerals->getPosition().x() + enemyBase->getPosition().x()) / 2;
+		ypos = (closestMinerals->getPosition().y() + enemyBase->getPosition().y()) / 2;
+	}*/
 
 	return BWAPI::Position(xpos, ypos);
 }

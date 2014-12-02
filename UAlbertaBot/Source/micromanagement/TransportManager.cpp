@@ -42,47 +42,74 @@ void TransportManager::executeMicro(const UnitVector & targets)
 			continue;
 		}
 
-		// if we're in position
-		if (transportUnit->getDistance(order.position) < order.radius)
+		// and we're carrying any reavers
+		if (transportUnit->getLoadedUnits().size() > 0)
 		{
-			// and we're carrying any reavers
-			if (transportUnit->getLoadedUnits().size() > 0)
+			// if we're in position
+			if (transportUnit->getDistance(order.position) < order.radius)
 			{
 				// drop reavers so they can attack
-				transportUnit->stop(false);
-
-				// unloadAll doesn't work properly, so drop everything explicitly
-				BOOST_FOREACH(BWAPI::Unit* reaver, transportUnit->getLoadedUnits())
+				BOOST_FOREACH(BWAPI::Unit * reaver, transportUnit->getLoadedUnits())
 				{
 					transportUnit->unload(reaver);
 				}
 			}
 			else
 			{
-				BWAPI::Unit * closestReaver = closestCarryUnit(transportUnit, waitingReavers);
-
-				transportUnit->stop();
-
-				transportUnit->load(closestReaver, true);
+				smartMove(transportUnit, order.position);
 			}
+		}
+		else if (waitingReavers.empty())
+		{
+			smartMove(transportUnit, order.position);
 		}
 		else
 		{
-			// if we're not in position and we've got a full house, move to target
-			if (transportUnit->getLoadedUnits().size() == 2)
-			{
-				smartMove(transportUnit, order.position);
-			}
-			// if there are reavers waiting to be loaded, pick them up
-			else if (waitingReavers.size() > 0)
-			{
-				BWAPI::Unit * closestReaver = closestCarryUnit(transportUnit, waitingReavers);
+			BWAPI::Unit * closestReaver = closestCarryUnit(transportUnit, waitingReavers);
 
-				transportUnit->stop();
-
-				transportUnit->load(closestReaver, true);
-			}
+			transportUnit->load(closestReaver, true);
 		}
+
+		//// if we're in position
+		//if (transportUnit->getDistance(order.position) < order.radius)
+		//{
+		//	// and we're carrying any reavers
+		//	if (transportUnit->getLoadedUnits().size() > 0)
+		//	{
+		//		
+
+		//		// unloadAll doesn't work properly, so drop everything explicitly
+		//		BOOST_FOREACH(BWAPI::Unit* reaver, loadedUnits)
+		//		{
+		//			transportUnit->load(reaver, true);
+		//		}
+		//	}
+		//	else
+		//	{
+		//		BWAPI::Unit * closestReaver = closestCarryUnit(transportUnit, waitingReavers);
+
+		//		transportUnit->stop();
+
+		//		transportUnit->load(closestReaver, true);
+		//	}
+		//}
+		//else
+		//{
+		//	// if we're not in position and we've got a full house, move to target
+		//	if (!transportUnit->getLoadedUnits().empty())
+		//	{
+		//		smartMove(transportUnit, order.position);
+		//	}
+		//	// if there are reavers waiting to be loaded, pick them up
+		//	else if (waitingReavers.size() > 0)
+		//	{
+		//		BWAPI::Unit * closestReaver = closestCarryUnit(transportUnit, waitingReavers);
+
+		//		transportUnit->stop();
+
+		//		transportUnit->load(closestReaver, true);
+		//	}
+		//}
 	}
 }
 
@@ -103,57 +130,4 @@ BWAPI::Unit * TransportManager::closestCarryUnit(BWAPI::Unit * transportUnit, Un
 	}
 
 	return closestGround;
-}
-
-BWAPI::Position TransportManager::getDropSite(BWAPI::Unit * transportUnit)
-{
-	BWAPI::Unit * closestMinerals = NULL;
-	double closestDist = 100000;
-	BWTA::BaseLocation* enemyBase = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy());
-	std::set<BWAPI::Unit*> minerals = enemyBase->getMinerals();
-
-	BOOST_FOREACH(BWAPI::Unit * mineral, minerals)
-	{
-		if (!mineral->getPosition().isValid())
-		{
-			continue;
-		}
-
-		double dist = mineral->getDistance(transportUnit);
-
-		if (!closestMinerals || (dist < closestDist))
-		{
-			closestMinerals = mineral;
-			closestDist = dist;
-		}
-	}
-
-	int xpos = -1, ypos = -1;
-
-	if (closestMinerals)
-	{
-		int dx = closestMinerals->getPosition().x() - transportUnit->getPosition().x();
-
-		if (dx < 0)
-		{
-			xpos = closestMinerals->getPosition().x() - 30;
-		}
-		else
-		{
-			xpos = closestMinerals->getPosition().x() + 30;
-		}
-
-		int dy = closestMinerals->getPosition().y() - transportUnit->getPosition().y();
-
-		if (dx < 0)
-		{
-			ypos = closestMinerals->getPosition().y() - 30;
-		}
-		else
-		{
-			ypos = closestMinerals->getPosition().y() + 30;
-		}
-	}
-
-	return BWAPI::Position(xpos, ypos);
 }

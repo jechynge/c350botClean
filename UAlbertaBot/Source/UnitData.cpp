@@ -162,3 +162,18 @@ bool UnitData::hasDetectorUnits() const
 
 	return false;
 }
+
+bool UnitData::hasFlyingUnits() const
+{
+	FOR_EACH_UIMAP_CONST(iter, unitMap)
+	{
+		const UnitInfo & ui(iter->second);
+
+		if (ui.isFlyer() && ui.type != BWAPI::UnitTypes::Protoss_Observer && ui.type != BWAPI::UnitTypes::Protoss_Shuttle && ui.type != BWAPI::UnitTypes::Zerg_Overlord)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
