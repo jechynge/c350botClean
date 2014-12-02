@@ -564,7 +564,7 @@ const MetaPairVector StrategyManager::getProtossZealotRushBuildOrderGoal() const
 	int numReavers = BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Reaver);
 	int numRoboticsFacility = BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Facility);
 	int numRoboticsSupport = BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Robotics_Support_Bay);
-	//int numForges = BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Forge);
+	int numForges = BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Forge);
 
 	int zealotsWanted = numZealots + 8;
 	int dragoonsWanted = numDragoons;
@@ -619,15 +619,19 @@ const MetaPairVector StrategyManager::getProtossZealotRushBuildOrderGoal() const
 		goal.push_back(MetaPair(BWAPI::UpgradeTypes::Singularity_Charge, 1));
 	}
 
-	//if (numZealots + numDragoons > 12)
-	//{
-	//	if (numForges == 0)
-	//	{
-	//		goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Forge, 1));
-	//	}
-	//}
+	if (numZealots + numDragoons > 12)
+	{
+		if (numForges == 0)
+		{
+			goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Forge, 1));
+		}
+	}
 
 	//if (numForges == 1) goal.push_back(MetaPair(BWAPI::UpgradeTypes::Protoss_Ground_Weapons, 1));
+
+	if ((numForges > 0) && ((numCannon*numNexusAll) <= 3)) {
+		goal.push_back(MetaPair(BWAPI::UnitTypes::Protoss_Photon_Cannon, 1));
+	}
 
 	if (numNexusCompleted >= 3)
 	{
