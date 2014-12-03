@@ -1,28 +1,30 @@
 /* 
  +----------------------------------------------------------------------+
- | UAlbertaBot                                                          |
+ | LTTPBotModule - a derivative of UAlbertaBot                          |
  +----------------------------------------------------------------------+
- | University of Alberta - AIIDE StarCraft Competition                  |
+ | University of Alberta - CMPUT 350 StarCraft Competition              |
  +----------------------------------------------------------------------+
  |                                                                      |
  +----------------------------------------------------------------------+
  | Author: David Churchill <dave.churchill@gmail.com>                   |
  +----------------------------------------------------------------------+
+ | Modifications: Team Late To The Party                                |
+ +----------------------------------------------------------------------+
 */
 
 #include "Common.h"
-#include "UAlbertaBotModule.h"
+#include "LTTPBotModule.h"
 
 
 BWAPI::AIModule * __NewAIModule()
 {
-	return new UAlbertaBotModule();
+	return new LTTPBotModule();
 }
 
-UAlbertaBotModule::UAlbertaBotModule()  {}
-UAlbertaBotModule::~UAlbertaBotModule() {}
+LTTPBotModule::LTTPBotModule()  {}
+LTTPBotModule::~LTTPBotModule() {}
 
-void UAlbertaBotModule::onStart()
+void LTTPBotModule::onStart()
 {
 	BWAPI::Broodwar->setLocalSpeed(0);
 	//BWAPI::Broodwar->setFrameSkip(240);
@@ -55,7 +57,7 @@ void UAlbertaBotModule::onStart()
 	}
 }
 
-void UAlbertaBotModule::onEnd(bool isWinner) 
+void LTTPBotModule::onEnd(bool isWinner)
 {
 	if (Options::Modules::USING_GAMECOMMANDER)
 	{
@@ -90,7 +92,7 @@ void UAlbertaBotModule::onEnd(bool isWinner)
 	}	
 }
 
-void UAlbertaBotModule::onFrame()
+void LTTPBotModule::onFrame()
 {
 	if (Options::Modules::USING_UNIT_COMMAND_MGR)
 	{
@@ -127,18 +129,18 @@ void UAlbertaBotModule::onFrame()
 	}
 }
 
-void UAlbertaBotModule::onUnitDestroy(BWAPI::Unit * unit)
+void LTTPBotModule::onUnitDestroy(BWAPI::Unit * unit)
 {
 	if (Options::Modules::USING_GAMECOMMANDER) { gameCommander.onUnitDestroy(unit); }
 	if (Options::Modules::USING_ENHANCED_INTERFACE) { eui.onUnitDestroy(unit); }
 }
 
-void UAlbertaBotModule::onUnitMorph(BWAPI::Unit * unit)
+void LTTPBotModule::onUnitMorph(BWAPI::Unit * unit)
 {
 	if (Options::Modules::USING_GAMECOMMANDER) { gameCommander.onUnitMorph(unit); }
 }
 
-void UAlbertaBotModule::onSendText(std::string text) 
+void LTTPBotModule::onSendText(std::string text)
 { 
 	BWAPI::Broodwar->sendText(text.c_str());
 
@@ -203,22 +205,22 @@ void UAlbertaBotModule::onSendText(std::string text)
 	}
 }
 
-void UAlbertaBotModule::onUnitCreate(BWAPI::Unit * unit)
+void LTTPBotModule::onUnitCreate(BWAPI::Unit * unit)
 { 
 	if (Options::Modules::USING_GAMECOMMANDER) { gameCommander.onUnitCreate(unit); }
 }
 
-void UAlbertaBotModule::onUnitShow(BWAPI::Unit * unit)
+void LTTPBotModule::onUnitShow(BWAPI::Unit * unit)
 { 
 	if (Options::Modules::USING_GAMECOMMANDER) { gameCommander.onUnitShow(unit); }
 }
 
-void UAlbertaBotModule::onUnitHide(BWAPI::Unit * unit)
+void LTTPBotModule::onUnitHide(BWAPI::Unit * unit)
 { 
 	if (Options::Modules::USING_GAMECOMMANDER) { gameCommander.onUnitHide(unit); }
 }
 
-void UAlbertaBotModule::onUnitRenegade(BWAPI::Unit * unit)
+void LTTPBotModule::onUnitRenegade(BWAPI::Unit * unit)
 { 
 	if (Options::Modules::USING_GAMECOMMANDER) { gameCommander.onUnitRenegade(unit); }
 }

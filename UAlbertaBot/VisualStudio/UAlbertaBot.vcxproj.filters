@@ -63,9 +63,6 @@
     <ClCompile Include="..\Source\Common.cpp">
       <Filter>module</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\UAlbertaBotModule.cpp">
-      <Filter>module</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source\MapGrid.cpp">
       <Filter>game\util\map</Filter>
     </ClCompile>
@@ -171,6 +168,9 @@
     <ClCompile Include="..\Source\micromanagement\ReaverManager.cpp">
       <Filter>game\combat\micro\specific</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\LTTPBotModule.cpp">
+      <Filter>module</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\CombatCommander.h">
@@ -183,9 +183,6 @@
       <Filter>game\macro\search</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Common.h">
-      <Filter>module</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\UAlbertaBotModule.h">
       <Filter>module</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\EnhancedInterface.hpp">
@@ -304,6 +301,9 @@
     </ClInclude>
     <ClInclude Include="..\Source\micromanagement\ReaverManager.h">
       <Filter>game\combat\micro\specific</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\LTTPBotModule.h">
+      <Filter>module</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

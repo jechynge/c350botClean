@@ -15,7 +15,6 @@ struct UnitInfo
 	BWAPI::Position		lastPosition;
 	BWAPI::UnitType		type;
     bool                completed;
-	std::string			specialTask;
 
 	bool canCloak() const
 	{

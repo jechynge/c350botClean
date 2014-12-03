@@ -17,7 +17,7 @@
 
 #include "Options.h"
 
-class UAlbertaBotModule : public BWAPI::AIModule
+class LTTPBotModule : public BWAPI::AIModule
 {
 	GameCommander			gameCommander;
 	EnhancedInterface		eui;
@@ -25,8 +25,8 @@ class UAlbertaBotModule : public BWAPI::AIModule
 
 public:
 			
-	UAlbertaBotModule();
-	~UAlbertaBotModule();
+	LTTPBotModule();
+	~LTTPBotModule();
 
 	void	onStart();
 	void	onFrame();

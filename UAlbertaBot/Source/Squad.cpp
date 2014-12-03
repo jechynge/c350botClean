@@ -120,6 +120,7 @@ void Squad::setManagerUnits()
 	{
 		if(unit->isCompleted() && unit->getHitPoints() > 0 && unit->exists())
 		{
+			// select reavers
 			if (unit->getType() == BWAPI::UnitTypes::Protoss_Reaver)
 			{
 				reaverUnits.push_back(unit);

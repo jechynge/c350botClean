@@ -69,12 +69,14 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 
 	int distanceToShuttle = 100000;
 
+	// if we have a shuttle
 	if (shuttle)
 	{
 		// assign the shuttle to our drop unit squad
 		dropUnits.push_back(shuttle);
 		unitsToAssign.erase(shuttle);
 
+		// find the reaver closest to our shuttle
 		BOOST_FOREACH(BWAPI::Unit * reaver, reavers)
 		{
 			int dist = shuttle->getDistance(reaver);
@@ -85,12 +87,14 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 			}
 		}
 
+		// if there is one, assign it to this squad
 		if (closestReaver)
 		{
 			unitsToAssign.erase(closestReaver);
 			dropUnits.push_back(closestReaver);
 		}
 
+		// if we only have a shuttle, have it hang out at the base and wait for a reaver
 		if (dropUnits.size() == 1)
 		{
 			BWAPI::Position orderTarget = ourBaseLocation;
@@ -98,12 +102,13 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 
 			squadData.addSquad(Squad(dropUnits, SquadOrder(SquadOrder::HarassWorkers, orderTarget, orderRadius, "More Reavers!")));
 		}
-		// ...and we have a reaver, then set our target to the enemy base
+		// if we have a reaver, then set our target to the enemy base
 		else if (dropUnits.size() > 1)
 		{
 			BWAPI::Position orderTarget = enemyBaseLocation;
 			int orderRadius = 100;
 
+			// if we're close to the enemy base, refine the position to their worker lines instead
 			if (shuttle->getDistance(orderTarget) < orderRadius)
 			{
 				orderTarget = getDropSite(shuttle);
@@ -113,20 +118,6 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 			squadData.addSquad(Squad(dropUnits, SquadOrder(SquadOrder::HarassWorkers, orderTarget, orderRadius, "Harass Workers!")));
 		}
 	}
-	//else if (!reavers.empty())
-	//{
-	//	BOOST_FOREACH(BWAPI::Unit * unit, reavers)
-	//	{
-	//		// if we have a reaver behind enemy lines with no shuttle, just cause havoc as long as we can
-	//		if (unit->getDistance(enemyBaseLocation) < 300)
-	//		{
-	//			UnitVector s;
-	//			s.push_back(unit);
-	//			squadData.addSquad(Squad(s, SquadOrder(SquadOrder::HarassWorkers, enemyBaseLocation, 300, "Harass Workers!")));
-	//			unitsToAssign.erase(unit);
-	//		}
-	//	}
-	//}
 }
 
 void CombatCommander::assignIdleSquads(std::set<BWAPI::Unit *> & unitsToAssign)
@@ -426,6 +417,7 @@ BWAPI::Position CombatCommander::getDropSite(BWAPI::Unit * transportUnit)
 	BWTA::BaseLocation* enemyBase = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy());
 	std::set<BWAPI::Unit*> minerals = enemyBase->getMinerals();
 
+	// see if we can find the enemy's mineral location, and get the one closest to their base
 	BOOST_FOREACH(BWAPI::Unit * mineral, minerals)
 	{
 		if (!mineral->getPosition().isValid())
@@ -444,18 +436,21 @@ BWAPI::Position CombatCommander::getDropSite(BWAPI::Unit * transportUnit)
 
 	int xpos = enemyBase->getPosition().x(), ypos = enemyBase->getPosition().y(), diff = 120;
 
-	//Attempt to drop behind mineral lines - somewhat buggy
+	// attempt to drop between their base and the mineral lines
 	if (closestMinerals)
 	{
+		// determine where the mineral line is in relation to the base
 		int dx = closestMinerals->getPosition().x() - enemyBase->getPosition().x();
 		int dy = closestMinerals->getPosition().y() - enemyBase->getPosition().y();
 
 		if (abs(dx) > abs(dy))
 		{
+			// west
 			if (dx < 0)
 			{
 				xpos = enemyBase->getPosition().x() - diff;
 			}
+			// east
 			else
 			{
 				xpos = enemyBase->getPosition().x() + diff;
@@ -463,23 +458,18 @@ BWAPI::Position CombatCommander::getDropSite(BWAPI::Unit * transportUnit)
 		}
 		else
 		{
+			// north
 			if (dy < 0)
 			{
 				ypos = enemyBase->getPosition().y() - diff;
 			}
+			// south
 			else
 			{
 				ypos = enemyBase->getPosition().y() + diff;
 			}
 		}
 	}
-
-	//drop right in mineral line
-	/*if (closestMinerals)
-	{
-		xpos = (closestMinerals->getPosition().x() + enemyBase->getPosition().x()) / 2;
-		ypos = (closestMinerals->getPosition().y() + enemyBase->getPosition().y()) / 2;
-	}*/
 
 	return BWAPI::Position(xpos, ypos);
 }

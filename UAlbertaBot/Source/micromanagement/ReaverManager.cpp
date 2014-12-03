@@ -56,6 +56,7 @@ void ReaverManager::executeMicro(const UnitVector & targets)
 		{
 			BWAPI::Unit* target = getTarget(rangedUnit, rangedUnitTargets);
 
+			// if we have a valid target, then shoot to kill
 			if (target)
 			{
 				smartAttackUnit(rangedUnit, target);
