@@ -570,7 +570,7 @@ const MetaPairVector StrategyManager::getProtossZealotRushBuildOrderGoal() const
 	int dragoonsWanted = numDragoons;
 	int gatewayWanted = 3;
 	int probesWanted = numProbes + 4;
-	int reaversWanted = 1 - numReavers;
+	int reaversWanted = 2 - numReavers;
 	int shuttlesWanted = 1 - numShuttles;
 
 	//If we build a robotics facility for observers, don't need to build another one for reavers
@@ -595,12 +595,12 @@ const MetaPairVector StrategyManager::getProtossZealotRushBuildOrderGoal() const
 	//If the enemy has air units, want extra dragoons and no more zealots
 	//Because air units will usually be made en masse and not just as a component of a varied army (Because these are bots we're playing against)
 	//Worst case scenario dragoons are still good and can attack ground and do bolster our end game force
-	//if (InformationManager::Instance().enemyFlyerThreat())
-	//{
-	//	zealotsWanted = 0;
-	//	dragoonsWanted += 6;
-	//	reaversWanted = 1; //Just the reaver for drops, no reaver component to army if they have no ground forces
-	//}
+	if (InformationManager::Instance().enemyFlyerThreat())
+	{
+		zealotsWanted = 0;
+		dragoonsWanted += 6;
+		reaversWanted = 1; //Just the reaver for drops, no reaver component to army if they have no ground forces
+	}
 
 	if (reaversWanted > 0 || shuttlesWanted > 0)
 	{

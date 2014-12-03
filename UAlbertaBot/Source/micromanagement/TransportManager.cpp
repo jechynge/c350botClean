@@ -67,7 +67,10 @@ void TransportManager::executeMicro(const UnitVector & targets)
 		{
 			BWAPI::Unit * closestReaver = closestCarryUnit(transportUnit, waitingReavers);
 
-			transportUnit->load(closestReaver, true);
+			if (closestReaver->getGroundWeaponCooldown())
+			{
+				transportUnit->load(closestReaver, true);
+			}
 		}
 
 		//// if we're in position

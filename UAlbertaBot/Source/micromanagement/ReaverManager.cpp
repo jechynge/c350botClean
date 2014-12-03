@@ -56,7 +56,7 @@ void ReaverManager::executeMicro(const UnitVector & targets)
 		{
 			BWAPI::Unit* target = getTarget(rangedUnit, rangedUnitTargets);
 
-			if (rangedUnit->getDistance(target) < order.radius)
+			if (target)
 			{
 				smartAttackUnit(rangedUnit, target);
 			}

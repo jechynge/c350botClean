@@ -39,9 +39,12 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 {
 	if (unitsToAssign.empty()) { return; }
 
-	UnitVector dropUnits;
+	UnitVector dropUnits, reavers;
 
-	BWAPI::Unit * shuttle = NULL, * roboticsBay = NULL;
+	BWAPI::Unit * shuttle = NULL, * closestReaver = NULL, * roboticsBay = NULL;
+
+	BWAPI::Position enemyBaseLocation = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy())->getPosition();
+	BWAPI::Position ourBaseLocation = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->self())->getPosition();
 
 	// remove the reavers and shuttles from the set so they don't get double-assigned.
 	// They're special snowflakes with a specific purpose
@@ -52,43 +55,46 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 			if (unit->getScarabCount() < 5 && !unit->isTraining())
 			{
 				unit->train(BWAPI::UnitTypes::Protoss_Scarab);
+				unit->train(BWAPI::UnitTypes::Protoss_Scarab);
 			}
 
-			dropUnits.push_back(unit);
+			reavers.push_back(unit);
 		}
 
 		if (unit->getType() == BWAPI::UnitTypes::Protoss_Shuttle)
 		{
-			dropUnits.push_back(unit);
 			shuttle = unit;
 		}
-
-		if (unit->getType() == BWAPI::UnitTypes::Protoss_Robotics_Facility)
-		{
-			roboticsBay = unit;
-		}
 	}
 
-	BOOST_FOREACH(BWAPI::Unit * unit, dropUnits)
-	{
-		unitsToAssign.erase(unit);
-	}
+	int distanceToShuttle = 100000;
 
-	BWAPI::Position enemyBaseLocation = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy())->getPosition();
-	BWAPI::Position ourBaseLocation = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->self())->getPosition();
-
-	// if we have a shuttle...
 	if (shuttle)
 	{
+		// assign the shuttle to our drop unit squad
+		dropUnits.push_back(shuttle);
+		unitsToAssign.erase(shuttle);
+
+		BOOST_FOREACH(BWAPI::Unit * reaver, reavers)
+		{
+			int dist = shuttle->getDistance(reaver);
+
+			if (!closestReaver || dist < distanceToShuttle)
+			{
+				closestReaver = reaver;
+			}
+		}
+
+		if (closestReaver)
+		{
+			unitsToAssign.erase(closestReaver);
+			dropUnits.push_back(closestReaver);
+		}
+
 		if (dropUnits.size() == 1)
 		{
 			BWAPI::Position orderTarget = ourBaseLocation;
 			int orderRadius = 100;
-
-			if (roboticsBay)
-			{
-				orderTarget = roboticsBay->getPosition();
-			}
 
 			squadData.addSquad(Squad(dropUnits, SquadOrder(SquadOrder::HarassWorkers, orderTarget, orderRadius, "More Reavers!")));
 		}
@@ -107,20 +113,20 @@ void CombatCommander::assignDropSquads(std::set<BWAPI::Unit *> & unitsToAssign)
 			squadData.addSquad(Squad(dropUnits, SquadOrder(SquadOrder::HarassWorkers, orderTarget, orderRadius, "Harass Workers!")));
 		}
 	}
-	else if (!dropUnits.empty())
-	{
-		BOOST_FOREACH(BWAPI::Unit * unit, dropUnits)
-		{
-			//InformationManager::Instance().getUnitInfo(BWAPI::Broodwar->self()).find(unit);
-			// if we have a reaver behind enemy lines with no shuttle, just cause havoc as long as we can
-			if (unit->getDistance(enemyBaseLocation) < 300)
-			{
-				UnitVector s;
-				s.push_back(unit);
-				squadData.addSquad(Squad(s, SquadOrder(SquadOrder::HarassWorkers, enemyBaseLocation, 300, "Harass Workers!")));
-			}
-		}
-	}
+	//else if (!reavers.empty())
+	//{
+	//	BOOST_FOREACH(BWAPI::Unit * unit, reavers)
+	//	{
+	//		// if we have a reaver behind enemy lines with no shuttle, just cause havoc as long as we can
+	//		if (unit->getDistance(enemyBaseLocation) < 300)
+	//		{
+	//			UnitVector s;
+	//			s.push_back(unit);
+	//			squadData.addSquad(Squad(s, SquadOrder(SquadOrder::HarassWorkers, enemyBaseLocation, 300, "Harass Workers!")));
+	//			unitsToAssign.erase(unit);
+	//		}
+	//	}
+	//}
 }
 
 void CombatCommander::assignIdleSquads(std::set<BWAPI::Unit *> & unitsToAssign)
